@@ -74,7 +74,7 @@ stack = app Android · Google Play · 5 mil+ downloads
 link = ↗ instalar na Google Play | https://play.google.com/store/apps/details?id=com.luk4w.codegravityfalls
 
 
-[section] aleatorios
+[section] aleatórios
 
 [card]
 title = Bitdrez
@@ -165,7 +165,7 @@ ascii=
                         ####      ####      ####      ####                      
                         ####      ####      ####      ####      
 text =
-Escreva um programa em Assembly, monte, e rode instrução por instrução vendo os registradores e a memória mudarem. Feito para quem está aprendendo como um processador pensa.
+Fiz este simulador para ajudar meus amigos a estudar para a disciplina de Arquitetura de Computadores. Escreva um programa em Assembly, monte e rode instrução por instrução, vendo os registradores e a memória mudarem.
 stack = simulador · educação
 link = ▶ simular agora | https://luk4w.github.io/mp-didatico/
 
@@ -217,8 +217,15 @@ link = ▶ ver gif e código | https://github.com/luk4w/Snake--
 stack = JavaScript · canvas · pretext
 link = código | https://github.com/luk4w/luk4w.github.io
 
+[section] em andamento
+[card]
+title = Complexidade enxadrística
+text =
+Projeto que visa estimar a complexidade de uma posição de xadrez a partir do comportamento de busca pelo melhor lance. O objetivo é entender por que algumas decisões exigem mais do jogador e como essa informação podem ajudar no aprendizado.
+stack = pesquisa · redes neurais · xadrez
 
-[section] fora do codigo
+
+[section] fora do código
 
 [card]
 title = Esportes
@@ -229,7 +236,7 @@ stack = natação · futebol · corrida
 [card]
 title = Xadrez
 text =
-Jogo xadrez online desde 2014, com mais de 8 mil partidas no Chess.com. O interesse pelo jogo acabou virando projeto: o Bitdrez e o treino de uma rede neural que avalia posições nasceram daqui.
+Jogo xadrez desde o ensino fundamental e, desde 2014, também online, com mais de 8 mil partidas no Chess.com. O interesse pelo jogo acabou virando projeto: o Bitdrez e o treino de uma rede neural que avalia posições nasceram daqui.
 stat = **1508** rápido | **1261** blitz | **1806** puzzles
 stack = melhores ratings no Chess.com
 link = ↗ perfil no Chess.com | https://www.chess.com/member/luk4w
