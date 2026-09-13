@@ -2,7 +2,7 @@
 // layout do DOM; como a fonte é monoespaçada, cada caractere vira uma célula que a
 // chuva e a água conseguem acender. O texto original continua no HTML para leitores de tela.
 import {
-  STYLES, MONO, TEXT_DECAY, REVEAL_SPEED, NEON, HOT, reduced,
+  STYLES, MONO, TEXT_DECAY, REVEAL_SPEED, ASCII_REVEAL_TIME, NEON, HOT, reduced,
   ASCII_COLS, ASCII_ROWS, ASCII_MAX_WIDTH, ASCII_SIDE_MIN, ASCII_SIDE_GAP,
 } from './config.js';
 import { view } from './grid.js';
@@ -76,10 +76,12 @@ export function layoutCards() {
     let x = 0; // início da coluna atual dentro do card (px)
     let y = 0;
     let total = 0;
-    const addLine = (chars, font, lh, cw, rest) => {
-      lines.push({ x, y, lh, font, rest, cw, chars, text: chars.join(''),
+    let asciiTotal = 0;
+    const addLine = (chars, font, lh, cw, rest, ascii = false) => {
+      lines.push({ x, y, lh, font, rest, cw, chars, text: chars.join(''), ascii,
         energy: new Float32Array(chars.length), hot: false, offset: total });
       total += chars.length;
+      if (ascii) asciiTotal += chars.length;
       y += lh;
     };
 
@@ -102,7 +104,7 @@ export function layoutCards() {
       const indent = Array(boxOffset + Math.floor((cols - longest) / 2)).fill(' ');
       const padRows = Math.max(0, ASCII_ROWS - rows.length);
       y += Math.floor(padRows / 2) * lh;
-      for (const row of rows) addLine(row.length ? indent.concat(row) : row, `${s.weight} ${size}px ${MONO}`, lh, cw, s.rest);
+      for (const row of rows) addLine(row.length ? indent.concat(row) : row, `${s.weight} ${size}px ${MONO}`, lh, cw, s.rest, true);
       y += Math.ceil(padRows / 2) * lh;
       return cols * cw;
     };
@@ -131,6 +133,7 @@ export function layoutCards() {
 
     card.lines = lines;
     card.total = total;
+    card.asciiTotal = asciiTotal;
     card.el.style.height = `${Math.max(artBottom, y)}px`;
     // destaque e links do card acompanham a coluna de texto
     const article = card.el.closest('.card');
@@ -199,7 +202,11 @@ export function drawText(dt) {
     // efeito "digitando": cada caractere novo nasce neon
     if (card.shown < card.total) {
       const before = card.shown;
-      const speed = Math.max(REVEAL_SPEED, card.total / 2); // nenhum card leva mais de ~2s
+      // a arte ASCII se desenha em ASCII_REVEAL_TIME; o texto, na velocidade normal (nenhum card leva mais de ~2s)
+      const current = card.lines.find((l) => before < l.offset + l.chars.length);
+      const speed = current && current.ascii
+        ? card.asciiTotal / ASCII_REVEAL_TIME
+        : Math.max(REVEAL_SPEED, (card.total - card.asciiTotal) / 2);
       card.shown = Math.min(card.total, before + speed * dt + 1);
       for (const line of card.lines) {
         const a = Math.max(0, Math.floor(before) - line.offset);

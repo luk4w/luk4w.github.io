@@ -32,6 +32,7 @@ export const HOVER_GLOW = 1; // 0 a 1
 // ---------- texto dos cards ----------
 export const TEXT_DECAY = 2.4; // quanto maior, mais rápido o brilho do texto apaga
 export const REVEAL_SPEED = 160; // caracteres por segundo no efeito "digitando"
+export const ASCII_REVEAL_TIME = 0.5; // segundos para a arte ASCII se desenhar inteira, qualquer que seja o tamanho
 // caixa padrão da arte ASCII, em caracteres: todas as artes usam a mesma escala e altura
 // (menores ficam centralizadas). 80×40 fica quase quadrado no card; 60×30 tem letras maiores
 export const ASCII_COLS = 80;
