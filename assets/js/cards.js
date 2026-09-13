@@ -134,6 +134,7 @@ export function layoutCards() {
     card.lines = lines;
     card.total = total;
     card.asciiTotal = asciiTotal;
+    card.cache = null; // as linhas mudaram: a imagem do texto em repouso é refeita
     card.el.style.height = `${Math.max(artBottom, y)}px`;
     // destaque e links do card acompanham a coluna de texto
     const article = card.el.closest('.card');
@@ -188,6 +189,31 @@ export function touchCards(cx, cy, R, a) {
   }
 }
 
+// folga acima e à direita da imagem guardada, para acentos e letras que passam da caixa
+const PAD = 4;
+
+// o texto em repouso de um card, desenhado uma única vez numa imagem na resolução da tela.
+// Depois que a digitação termina, cada quadro só cola essa imagem e desenha por cima as
+// letras acesas, em vez de redesenhar todas as linhas.
+function staticLayer(card) {
+  const dpr = view.dpr;
+  if (card.cache && card.cache.dpr === dpr) return card.cache;
+  const layer = document.createElement('canvas');
+  layer.width = Math.ceil((card.el.clientWidth + PAD) * dpr);
+  layer.height = Math.ceil((card.el.clientHeight + PAD * 2) * dpr);
+  const g = layer.getContext('2d');
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  g.textBaseline = 'middle';
+  for (const line of card.lines) {
+    if (!line.chars.length) continue;
+    g.font = line.font;
+    g.fillStyle = line.rest;
+    g.fillText(line.text, line.x, PAD + line.y + line.lh / 2);
+  }
+  card.cache = { canvas: layer, dpr, w: layer.width / dpr, h: layer.height / dpr };
+  return card.cache;
+}
+
 export function drawText(dt) {
   const { list, rects } = cardState;
   ctx.clearRect(0, 0, view.W, view.H);
@@ -215,20 +241,35 @@ export function drawText(dt) {
       }
     }
 
+    // posição alinhada ao pixel da tela, para a imagem guardada e as letras acesas coincidirem
+    const cardLeft = Math.round(r.left * view.dpr) / view.dpr;
+    const cardTop = Math.round(r.top * view.dpr) / view.dpr;
+    const revealing = card.shown < card.total;
+    if (!revealing) {
+      const layer = staticLayer(card);
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
+      ctx.drawImage(layer.canvas, cardLeft, cardTop - PAD, layer.w, layer.h);
+    }
+
     for (const line of card.lines) {
-      const top = r.top + line.y;
+      // com a imagem guardada, só as linhas com letras acesas precisam ser desenhadas
+      if (!revealing && !line.hot) continue;
+      const top = cardTop + line.y;
       if (top + line.lh < 0 || top > view.H) continue;
       const vis = visibleChars(card, line);
       if (vis === 0) continue;
       const cy = top + line.lh / 2;
-
-      // a linha inteira no tom de repouso...
+      const left = cardLeft + line.x;
       ctx.font = line.font;
-      ctx.globalAlpha = 1;
-      ctx.shadowBlur = 0;
-      ctx.fillStyle = line.rest;
-      const left = r.left + line.x;
-      ctx.fillText(vis === line.chars.length ? line.text : line.chars.slice(0, vis).join(''), left, cy);
+
+      // durante a digitação: a parte já mostrada da linha no tom de repouso...
+      if (revealing) {
+        ctx.globalAlpha = 1;
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = line.rest;
+        ctx.fillText(vis === line.chars.length ? line.text : line.chars.slice(0, vis).join(''), left, cy);
+      }
 
       // ...e por cima só os caracteres acesos, que vão apagando
       if (!line.hot) continue;
