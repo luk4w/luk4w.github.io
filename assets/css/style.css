@@ -35,6 +35,9 @@
 
 * { box-sizing: border-box; }
 
+/* reserva o espaço da barra de rolagem: quando ela aparece, a página centralizada não anda para o lado */
+html { scrollbar-gutter: stable; }
+
 html, body {
   margin: 0;
   background: var(--bg);
@@ -177,6 +180,13 @@ section > h2::before { content: "// "; color: var(--neon); }
 .card { min-width: 0; }
 .txt pre.ascii { max-width: 100%; margin: 0 0 14px; font: inherit; font-size: 12px; line-height: 1.15; color: var(--text-ascii); overflow-x: auto; }
 .content-error { color: var(--dim); }
+
+/* evita a página "pulando" enquanto carrega (Cumulative Layout Shift):
+   - o espaço dos cards já existe antes de eles chegarem, então o rodapé nasce fora da tela
+   - os cards ficam ocultos até o canvas assumir, e aparecem uma vez só, já na forma final
+     (.plain: o Pretext não carregou e o texto fica em HTML) */
+main[data-content] { min-height: 100vh; }
+html:not(.painted):not(.plain) main[data-content] > * { visibility: hidden; }
 
 /* depois que o canvas assume, o texto do DOM fica só para leitores de tela */
 .painted .txt > * {

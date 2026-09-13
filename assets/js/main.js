@@ -84,6 +84,7 @@ async function start() {
     pretext = await import(PRETEXT_URL);
   } catch (err) {
     console.warn('Pretext não carregou; o texto fica em HTML', err);
+    document.documentElement.classList.add('plain'); // mostra os cards em HTML (o CSS os esconde até o canvas assumir)
     return;
   }
 
