@@ -15,10 +15,10 @@ const ctx = canvas.getContext('2d');
 const prepCache = new Map();
 const widthCache = new Map();
 let prepareWithSegments;
-let layoutWithLines;
+let layoutNextLine;
 
 export function initCards(pretext) {
-  ({ prepareWithSegments, layoutWithLines } = pretext);
+  ({ prepareWithSegments, layoutNextLine } = pretext);
   cardState.list = [...document.querySelectorAll('.txt')].map((el) => ({
     el,
     blocks: [...el.children].map((child) => {
@@ -131,8 +131,8 @@ function drawRestLine(g, line, vis, left, cy) {
 }
 
 // quebra o texto de cada card em linhas e ajusta a altura do card no DOM.
-// Card largo com arte ASCII: arte à esquerda e texto numa coluna à direita (como a página
-// de um app). Card estreito: arte em cima, centralizada.
+// Card largo com arte ASCII: arte à esquerda e o texto contornando ela 
+// (ao lado enquanto a arte ocupa a altura da linha, na largura toda depois). Card estreito: arte em cima, centralizada.
 export function layoutCards() {
   for (const card of cardState.list) {
     const width = card.el.clientWidth;
@@ -152,9 +152,8 @@ export function layoutCards() {
       y += lh;
     };
 
-    // arte ASCII não quebra linha: fica numa caixa padrão de ASCII_COLS × ASCII_ROWS, com a
-    // fonte do tamanho que faz a caixa caber. Arte maior que a caixa não é cortada: só essa
-    // encolhe mais. Devolve a largura da caixa em px.
+    // arte ASCII não quebra linha: fica numa caixa padrão de ASCII_COLS × ASCII_ROWS, com a fonte do tamanho que faz a caixa caber
+    // Arte maior que a caixa não é cortada: só essa encolhe mais
     const addAscii = (block, center) => {
       const s = STYLES.ascii;
       const rows = block.text.split('\n').map((row) => Array.from(row.trimEnd()));
@@ -177,13 +176,12 @@ export function layoutCards() {
     };
 
     let artBottom = 0;
-    let textWidth = width;
+    let textX = 0; // onde começa o texto que fica ao lado da arte
     if (side) {
       const artWidth = addAscii(ascii, false);
       artBottom = y;
-      x = Math.ceil(artWidth + ASCII_SIDE_GAP);
+      textX = Math.ceil(artWidth + ASCII_SIDE_GAP);
       y = 0;
-      textWidth = width - x;
     } else if (ascii) {
       addAscii(ascii, true);
       if (texts.length) y += STYLES.ascii.gap;
@@ -194,9 +192,17 @@ export function layoutCards() {
       if (i > 0) y += dom ? dom.marginTop : STYLES[texts[i - 1].kind].gap;
       const s = dom || STYLES[block.kind];
       const cw = charWidth(s.font);
+      const prep = prepared(block.text, s.font);
       const full = Array.from(block.text);
       let p = 0; // onde a linha começa no texto completo, para achar o negrito dela
-      for (const line of layoutWithLines(prepared(block.text, s.font), textWidth, s.lh).lines) {
+      let cursor = { segmentIndex: 0, graphemeIndex: 0 };
+      for (;;) {
+        // Pretext quebra uma linha por vez, cada uma com a largura livre na altura dela
+        const beside = side && y < artBottom;
+        x = beside ? textX : 0;
+        const line = layoutNextLine(prep, cursor, beside ? width - textX : width);
+        if (!line) break;
+        cursor = line.end;
         const chars = Array.from(line.text.trimEnd());
         while (p < full.length && full[p] === ' ' && chars[0] !== ' ') p++;
         let bold = null;
@@ -218,7 +224,8 @@ export function layoutCards() {
     const article = card.el.closest('.card');
     if (article) {
       article.classList.toggle('side', side);
-      article.style.setProperty('--side-offset', `${side ? x : 0}px`);
+      // se o texto passou do fim da arte, destaque e links voltam para a margem do card
+      article.style.setProperty('--side-offset', `${side && y <= artBottom ? textX : 0}px`);
     }
   }
 }
