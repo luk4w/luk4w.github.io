@@ -1,0 +1,227 @@
+:root {
+  --bg: #010804;
+  --panel: rgba(2, 13, 6, 0.86);
+  --panel-soft: rgba(2, 13, 6, 0.62);
+  /* a cor de destaque em "r, g, b": o CSS usa com transparência e o canvas lê daqui */
+  --neon-rgb: 57, 255, 20;
+  --hot-rgb: 226, 255, 216; /* o neon mais aceso, quase branco */
+  --neon: rgb(var(--neon-rgb));
+  --line: rgba(var(--neon-rgb), 0.16);
+  --line-hot: rgba(var(--neon-rgb), 0.55);
+  --green: #5bdc6e;
+  --dim: #3a9a55;
+  /* tons de repouso do texto dos cards desenhado em canvas */
+  --text-title: rgb(92, 222, 112);
+  --text-desc: rgb(52, 168, 82);
+  --text-stack: rgb(40, 140, 70);
+  --text-ascii: rgb(70, 196, 98);
+  --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  color-scheme: dark;
+}
+
+[data-theme="orange"] {
+  --bg: #0a0502;
+  --panel: rgba(16, 8, 2, 0.86);
+  --panel-soft: rgba(16, 8, 2, 0.62);
+  --neon-rgb: 255, 138, 31;
+  --hot-rgb: 255, 240, 222;
+  --green: #ffae5c;
+  --dim: #b87a44;
+  --text-title: rgb(255, 176, 102);
+  --text-desc: rgb(214, 132, 64);
+  --text-stack: rgb(184, 110, 50);
+  --text-ascii: rgb(236, 154, 82);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--green);
+  font-family: var(--mono);
+}
+
+body { min-height: 100vh; }
+
+#rain, #glow {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+#rain { z-index: 0; }
+#glow { z-index: 2; pointer-events: none; }
+
+.wrap {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-inline: clamp(16px, 4vw, 40px);
+  padding-block: 20px 60px;
+}
+
+a { color: var(--neon); }
+
+/* nav */
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+nav .brand { color: var(--neon); text-decoration: none; font-weight: 700; }
+nav ul { display: flex; flex-wrap: wrap; gap: 6px 18px; list-style: none; margin: 0; padding: 0; }
+nav ul a { color: var(--dim); text-decoration: none; font-size: 14px; }
+nav ul a:hover, nav ul a[aria-current="page"] { color: var(--neon); }
+nav ul a[aria-current="page"]::before { content: "> "; }
+
+/* hero */
+.hero {
+  margin-top: clamp(40px, 10vh, 110px);
+  margin-bottom: clamp(40px, 8vh, 80px);
+  padding: clamp(20px, 4vw, 36px);
+  background: var(--panel-soft);
+  border: 1px solid var(--line);
+}
+.hero .prompt { color: var(--dim); font-size: 14px; margin: 0 0 10px; }
+.hero h1 {
+  margin: 0;
+  font-size: clamp(40px, 11vw, 88px);
+  line-height: 1;
+  color: var(--neon);
+  letter-spacing: -0.02em;
+  text-shadow: 0 0 6px rgba(var(--neon-rgb), 0.8), 0 0 28px rgba(var(--neon-rgb), 0.35);
+  animation: flicker 5s infinite;
+}
+.hero h1 .cursor {
+  display: inline-block;
+  width: 0.5em;
+  height: 0.85em;
+  margin-left: 0.08em;
+  background: var(--neon);
+  vertical-align: -0.05em;
+  animation: blink 1s steps(1) infinite;
+}
+.hero .role { margin: 16px 0 0; font-size: clamp(15px, 2.4vw, 19px); color: var(--green); }
+.hero .bio { margin: 14px 0 0; line-height: 1.7; font-size: 15px; color: var(--dim); }
+.hero .bio strong { color: var(--green); font-weight: 600; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+.btn {
+  display: inline-block;
+  padding: 10px 16px;
+  font-size: 14px;
+  text-decoration: none;
+  color: var(--neon);
+  border: 1px solid var(--line-hot);
+  background: rgba(var(--neon-rgb), 0.04);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.btn:hover, .btn:focus-visible {
+  background: rgba(var(--neon-rgb), 0.12);
+  box-shadow: 0 0 16px rgba(var(--neon-rgb), 0.35);
+  outline: none;
+}
+
+/* sections */
+section { margin-top: 56px; }
+section > h2 {
+  display: inline-block;
+  margin: 0 0 18px;
+  padding: 4px 10px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--dim);
+  background: var(--panel);
+}
+section > h2::before { content: "// "; color: var(--neon); }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap: 16px;
+}
+.grid.wide { grid-template-columns: 1fr; }
+
+/* cards */
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 20px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+.card:hover, .card:focus-within {
+  border-color: var(--line-hot);
+  box-shadow: 0 0 22px rgba(var(--neon-rgb), 0.14), inset 0 0 22px rgba(var(--neon-rgb), 0.05);
+}
+
+.txt { position: relative; }
+.txt h3 { margin: 0 0 8px; font-size: 17px; line-height: 24px; color: var(--green); }
+.txt p { margin: 0 0 10px; font-size: 14px; line-height: 22px; color: var(--dim); }
+.txt p.stack { margin: 0; font-size: 12px; line-height: 18px; }
+/* antes do canvas assumir (ou sem Pretext), a arte rola dentro do card em vez de alargá-lo */
+.card { min-width: 0; }
+.txt pre.ascii { max-width: 100%; margin: 0 0 14px; font: inherit; font-size: 12px; line-height: 1.15; color: var(--text-ascii); overflow-x: auto; }
+.content-error { color: var(--dim); }
+
+/* depois que o canvas assume, o texto do DOM fica só para leitores de tela */
+.painted .txt > * {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* card largo com arte ASCII à esquerda: destaque e links alinhados com a coluna de texto */
+.card.side > .stat, .card.side > .links { margin-left: var(--side-offset); }
+
+.links { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 13px; }
+.links a { text-decoration: none; }
+.links a:hover, .links a:focus-visible { text-decoration: underline; text-shadow: 0 0 8px var(--neon); outline: none; }
+
+.stat {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 22px;
+  font-size: 13px;
+  color: var(--dim);
+}
+.stat b { color: var(--neon); font-weight: 700; }
+
+footer {
+  margin-top: 70px;
+  padding: 12px 14px;
+  font-size: 12px;
+  color: var(--dim);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  justify-content: space-between;
+}
+
+@keyframes blink { 50% { opacity: 0; } }
+@keyframes flicker {
+  0%, 92%, 100% { opacity: 1; }
+  93% { opacity: 0.55; }
+  94% { opacity: 1; }
+  96% { opacity: 0.75; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero h1, .hero h1 .cursor { animation: none; }
+}

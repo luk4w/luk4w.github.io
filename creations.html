@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="orange">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>luk4w · Coleção de criações</title>
+  <meta name="description" content="Coleção de criações de luk4w — coisas para abrir, jogar e usar agora.">
+  <meta name="theme-color" content="#0a0502">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%230a0502'/><text x='3' y='13' font-family='monospace' font-size='13' fill='%23ff8a1f'>&gt;</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+  <canvas id="rain" aria-hidden="true"></canvas>
+  <canvas id="glow" aria-hidden="true"></canvas>
+
+  <div class="wrap">
+    <nav>
+      <a class="brand" href="./">luk4w</a>
+      <ul>
+        <li><a href="./">portfólio</a></li>
+        <li><a href="creations.html" aria-current="page">criações</a></li>
+        <li><a href="https://github.com/luk4w">github</a></li>
+      </ul>
+    </nav>
+
+    <header class="hero">
+      <p class="prompt">~/luk4w $ ls criacoes/</p>
+      <h1>criações<span class="cursor" aria-hidden="true"></span></h1>
+      <p class="role">Coisas que eu fiz e que você pode abrir agora</p>
+      <p class="bio">
+        Alguns projetos que saíram da minha cabeça e viraram coisas que você pode <strong>jogar, usar ou
+          instalar</strong>. Os detalhes técnicos de cada um estão no <a href="./">portfólio</a>.
+      </p>
+    </header>
+
+    <!-- cards em content/creations.txt -->
+    <main data-content="content/creations.txt"></main>
+
+    <footer>
+      <span>luk4w · coleção de criações</span>
+      <span><a href="./">← voltar ao portfólio</a></span>
+    </footer>
+  </div>
+
+  <script type="module" src="assets/js/main.js"></script>
+</body>
+
+</html>

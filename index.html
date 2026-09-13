@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>luk4w · Portfólio</title>
+  <meta name="description" content="Portfólio de projetos de luk4w — Engenharia de Computação. Apps, jogos, simuladores e redes neurais.">
+  <meta name="theme-color" content="#010804">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' fill='%23010804'/><text x='3' y='13' font-family='monospace' font-size='13' fill='%2339ff14'>&gt;</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <canvas id="rain" aria-hidden="true"></canvas>
+  <canvas id="glow" aria-hidden="true"></canvas>
+
+  <div class="wrap">
+    <nav>
+      <a class="brand" href="./">luk4w</a>
+      <ul>
+        <li><a href="./" aria-current="page">portfólio</a></li>
+        <li><a href="creations.html">criações</a></li>
+        <li><a href="https://github.com/luk4w">github</a></li>
+      </ul>
+    </nav>
+
+    <header class="hero">
+      <p class="prompt">~/luk4w $ whoami</p>
+      <h1>luk4w<span class="cursor" aria-hidden="true"></span></h1>
+      <p class="role">Lucas Franco de Mello · Engenharia de Computação · Brasil</p>
+      <p class="bio">
+        Desenvolvo software com foco em sistemas de baixo nível, computação gráfica e inteligência artificial, com projetos que vão de um jogo de xadrez baseado em <strong>bitboards</strong> e um simulador de <strong>microprocessador de 8 bits</strong> a renderização com <strong>OpenGL/Vulkan</strong> e treinamento de <strong>redes neurais</strong>. Publiquei um app Android na Google Play com mais de <strong>5 mil downloads</strong>.
+      </p>
+      <div class="actions">
+        <a class="btn" href="https://play.google.com/store/apps/details?id=com.luk4w.codegravityfalls">Google Play</a>
+        <a class="btn" href="https://github.com/luk4w">GitHub</a>
+        <a class="btn" href="creations.html">Coleção de criações →</a>
+      </div>
+    </header>
+
+    <!-- cards em content/portfolio.txt -->
+    <main data-content="content/portfolio.txt"></main>
+
+    <footer>
+      <span>luk4w · portfólio</span>
+    </footer>
+  </div>
+
+  <script type="module" src="assets/js/main.js"></script>
+</body>
+</html>
