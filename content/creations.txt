@@ -68,7 +68,7 @@ ascii=
         ..                                                                                                                                  
         ..                                                                                                      @@                          
 text =
-Um decodificador de bolso para fãs de Gravity Falls. Criei o app enquanto assistia ao desenho com uma amiga: cada episódio esconde mensagens cifradas como easter eggs, e em vez de decifrar tudo no papel, desenvolvi uma ferramenta para isso. Publiquei na Google Play e ele passou de 5 mil downloads.
+Um decodificador de bolso para fãs de Gravity Falls. Criei o app enquanto assistia ao desenho com uma amiga: cada episódio escondia mensagens cifradas como easter eggs e, em vez de decifrá-las no papel, desenvolvi uma ferramenta para isso. Depois de publicado na Google Play, o app passou de 5 mil downloads.
 
 stack = app Android · Google Play · 5 mil+ downloads
 link = ↗ instalar na Google Play | https://play.google.com/store/apps/details?id=com.luk4w.codegravityfalls
