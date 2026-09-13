@@ -91,6 +91,9 @@ nav ul a[aria-current="page"]::before { content: "> "; }
   border: 1px solid var(--line);
 }
 .hero .prompt { color: var(--dim); font-size: 14px; margin: 0 0 10px; }
+/* no canvas, o texto do topo vira blocos .txt: as margens dos parágrafos passam para os blocos */
+.painted .hero > .txt:first-child { margin-bottom: 10px; }
+.painted .hero h1 + .txt { margin-top: 16px; }
 .hero h1 {
   margin: 0;
   font-size: clamp(40px, 11vw, 88px);

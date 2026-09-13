@@ -23,6 +23,8 @@ export function initCards(pretext) {
     el,
     blocks: [...el.children].map((child) => {
       if (child.tagName === 'PRE') return { kind: 'ascii', text: child.textContent.replace(/\s+$/, '') };
+      // topo da página: fonte, cor e espaçamento vêm do CSS do próprio elemento
+      if (el.classList.contains('hero-txt')) return { kind: 'dom', el: child, ...richText(child) };
       return {
         kind: /^H\d$/.test(child.tagName) ? 'title' : child.classList.contains('stack') ? 'stack' : 'desc',
         text: child.textContent.trim().replace(/\s+/g, ' '),
@@ -63,6 +65,71 @@ function charWidth(font) {
   return w;
 }
 
+// texto de um elemento do HTML com os trechos em <strong> marcados; espaços colapsados como no HTML
+function richText(node) {
+  const chars = [];
+  const bold = [];
+  const walk = (parent, isBold) => {
+    for (const n of parent.childNodes) {
+      if (n.nodeType === Node.TEXT_NODE) {
+        for (const ch of n.textContent) {
+          if (/\s/.test(ch)) {
+            if (!chars.length || chars[chars.length - 1] === ' ') continue;
+            chars.push(' ');
+            bold.push(0);
+          } else {
+            chars.push(ch);
+            bold.push(isBold ? 1 : 0);
+          }
+        }
+      } else if (n.nodeType === Node.ELEMENT_NODE) {
+        walk(n, isBold || n.tagName === 'STRONG' || n.tagName === 'B');
+      }
+    }
+  };
+  walk(node, false);
+  while (chars.length && chars[chars.length - 1] === ' ') {
+    chars.pop();
+    bold.pop();
+  }
+  return { text: chars.join(''), boldMask: bold.includes(1) ? bold : null };
+}
+
+// fonte, cor e espaçamento de um elemento como o CSS calculou (acompanha clamp() e o tema)
+function domStyle(node) {
+  const cs = getComputedStyle(node);
+  const size = parseFloat(cs.fontSize);
+  const strong = node.querySelector('strong, b');
+  const bs = strong && getComputedStyle(strong);
+  return {
+    font: `${cs.fontWeight} ${size}px ${MONO}`,
+    lh: cs.lineHeight === 'normal' ? Math.round(size * 1.3) : parseFloat(cs.lineHeight),
+    rest: cs.color,
+    marginTop: parseFloat(cs.marginTop) || 0,
+    bold: bs ? { font: `${bs.fontWeight} ${size}px ${MONO}`, color: bs.color } : null,
+  };
+}
+
+// desenha a linha no tom de repouso; os trechos em negrito com a fonte e a cor deles
+// (a fonte é monoespaçada, então o negrito ocupa o mesmo espaço)
+function drawRestLine(g, line, vis, left, cy) {
+  if (!line.bold) {
+    g.font = line.font;
+    g.fillStyle = line.rest;
+    g.fillText(vis === line.chars.length ? line.text : line.chars.slice(0, vis).join(''), left, cy);
+    return;
+  }
+  const { mask, font, color } = line.bold;
+  let start = 0;
+  for (let i = 1; i <= vis; i++) {
+    if (i < vis && mask[i] === mask[start]) continue;
+    g.font = mask[start] ? font : line.font;
+    g.fillStyle = mask[start] ? color : line.rest;
+    g.fillText(line.chars.slice(start, i).join(''), left + start * line.cw, cy);
+    start = i;
+  }
+}
+
 // quebra o texto de cada card em linhas e ajusta a altura do card no DOM.
 // Card largo com arte ASCII: arte à esquerda e texto numa coluna à direita (como a página
 // de um app). Card estreito: arte em cima, centralizada.
@@ -77,8 +144,8 @@ export function layoutCards() {
     let y = 0;
     let total = 0;
     let asciiTotal = 0;
-    const addLine = (chars, font, lh, cw, rest, ascii = false) => {
-      lines.push({ x, y, lh, font, rest, cw, chars, text: chars.join(''), ascii,
+    const addLine = (chars, font, lh, cw, rest, ascii = false, bold = null) => {
+      lines.push({ x, y, lh, font, rest, cw, chars, text: chars.join(''), ascii, bold,
         energy: new Float32Array(chars.length), hot: false, offset: total });
       total += chars.length;
       if (ascii) asciiTotal += chars.length;
@@ -123,12 +190,23 @@ export function layoutCards() {
     }
 
     texts.forEach((block, i) => {
-      const s = STYLES[block.kind];
+      const dom = block.kind === 'dom' ? domStyle(block.el) : null;
+      if (i > 0) y += dom ? dom.marginTop : STYLES[texts[i - 1].kind].gap;
+      const s = dom || STYLES[block.kind];
       const cw = charWidth(s.font);
+      const full = Array.from(block.text);
+      let p = 0; // onde a linha começa no texto completo, para achar o negrito dela
       for (const line of layoutWithLines(prepared(block.text, s.font), textWidth, s.lh).lines) {
-        addLine(Array.from(line.text.trimEnd()), s.font, s.lh, cw, s.rest);
+        const chars = Array.from(line.text.trimEnd());
+        while (p < full.length && full[p] === ' ' && chars[0] !== ' ') p++;
+        let bold = null;
+        if (dom && dom.bold && block.boldMask) {
+          const mask = block.boldMask.slice(p, p + chars.length);
+          if (mask.includes(1)) bold = { mask, font: dom.bold.font, color: dom.bold.color };
+        }
+        p += Array.from(line.text).length;
+        addLine(chars, s.font, s.lh, cw, s.rest, false, bold);
       }
-      if (i < texts.length - 1) y += s.gap;
     });
 
     card.lines = lines;
@@ -206,9 +284,7 @@ function staticLayer(card) {
   g.textBaseline = 'middle';
   for (const line of card.lines) {
     if (!line.chars.length) continue;
-    g.font = line.font;
-    g.fillStyle = line.rest;
-    g.fillText(line.text, line.x, PAD + line.y + line.lh / 2);
+    drawRestLine(g, line, line.chars.length, line.x, PAD + line.y + line.lh / 2);
   }
   card.cache = { canvas: layer, dpr, w: layer.width / dpr, h: layer.height / dpr };
   return card.cache;
@@ -267,8 +343,8 @@ export function drawText(dt) {
       if (revealing) {
         ctx.globalAlpha = 1;
         ctx.shadowBlur = 0;
-        ctx.fillStyle = line.rest;
-        ctx.fillText(vis === line.chars.length ? line.text : line.chars.slice(0, vis).join(''), left, cy);
+        drawRestLine(ctx, line, vis, left, cy);
+        ctx.font = line.font;
       }
 
       // ...e por cima só os caracteres acesos, que vão apagando
@@ -283,6 +359,7 @@ export function drawText(dt) {
           continue;
         }
         hotLine = true;
+        if (line.bold) ctx.font = line.bold.mask[i] ? line.bold.font : line.font;
         ctx.globalAlpha = Math.min(1, e * 1.1);
         ctx.fillStyle = e > 0.9 ? HOT : NEON;
         ctx.fillText(line.chars[i], left + i * line.cw, cy);
