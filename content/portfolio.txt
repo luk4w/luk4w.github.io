@@ -170,8 +170,8 @@ ascii=
 text =
 Simulador web de um microprocessador de 8 bits, criado para ajudar meus colegas na disciplina de Arquitetura de Computadores. Tem montador Assembly, execução passo a passo e visualização em tempo real de registradores, flags, ROM e RAM.
 stack = JavaScript · Assembly · arquitetura de computadores
-link = ▶ simular | https://luk4w.github.io/mp-didatico/
-link = código | https://github.com/luk4w/mp-didatico
+link = ▶ simular | https://luk4w.github.io/mcudidatico/
+link = código | https://github.com/luk4w/mcudidatico/
 
 [card]
 title = Snake++

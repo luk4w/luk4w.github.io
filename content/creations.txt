@@ -167,7 +167,7 @@ ascii=
 text =
 Fiz este simulador para ajudar meus amigos a estudar para a disciplina de Arquitetura de Computadores. Escreva um programa em Assembly, monte e rode instrução por instrução, vendo os registradores e a memória mudarem.
 stack = simulador · educação
-link = ▶ simular agora | https://luk4w.github.io/mp-didatico/
+link = ▶ simular agora | https://luk4w.github.io/mcudidatico/
 
 [card]
 title = Snake++
